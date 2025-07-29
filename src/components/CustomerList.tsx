@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -28,6 +29,9 @@ import {
   Phone,
   FileText,
   Receipt,
+  MapPin,
+  Building,
+  Hash
 } from "lucide-react";
 
 interface Customer {
@@ -37,6 +41,11 @@ interface Customer {
   phone?: string;
   address?: string;
   company?: string;
+  gst_number?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
   totalQuotations?: number;
   totalInvoices?: number;
   totalAmount?: number;
@@ -47,15 +56,17 @@ interface CustomerListProps {
   customers: Customer[];
   onCreateNew: () => void;
   onViewCustomer: (id: string) => void;
+  onEditCustomer: (customer: Customer) => void;
   onDelete: (customerId: string) => void;
 }
 
-const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: CustomerListProps) => {
+const CustomerList = ({ customers, onCreateNew, onViewCustomer, onEditCustomer, onDelete }: CustomerListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [showViewDialog, setShowViewDialog] = useState(false);
 
   const displayCustomers = customers.map(c => ({
-    id: c.id,
-    name: c.name,
+    ...c,
     email: c.email || "No email",
     phone: c.phone || "No phone",
     address: c.address || "No address",
@@ -80,6 +91,11 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
         {config.label}
       </Badge>
     );
+  };
+
+  const handleViewCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setShowViewDialog(true);
   };
 
   const filteredCustomers = displayCustomers.filter(customer =>
@@ -110,7 +126,7 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
       {/* Customers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Customers</CardTitle>
+          <CardTitle>All Customers ({customers.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border overflow-x-auto">
@@ -119,18 +135,16 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
                 <TableRow>
                   <TableHead>Customer</TableHead>
                   <TableHead>Contact</TableHead>
+                  <TableHead>Company/GST</TableHead>
+                  <TableHead>Location</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Quotations</TableHead>
-                  <TableHead>Invoices</TableHead>
-                  <TableHead>Total Value</TableHead>
-                  <TableHead>Last Activity</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredCustomers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-6">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
                       No customers found.
                     </TableCell>
                   </TableRow>
@@ -140,7 +154,7 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
                       <TableCell>
                         <div className="space-y-1">
                           <div className="font-medium">{customer.name}</div>
-                          <div className="text-sm text-muted-foreground">{customer.id}</div>
+                          <div className="text-sm text-muted-foreground">{customer.id.slice(0, 8)}...</div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -155,23 +169,38 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
                           </div>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {customer.company && (
+                            <div className="flex items-center text-sm">
+                              <Building className="mr-1 h-3 w-3" />
+                              {customer.company}
+                            </div>
+                          )}
+                          {customer.gst_number && (
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Hash className="mr-1 h-3 w-3" />
+                              {customer.gst_number}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {customer.city && (
+                            <div className="flex items-center text-sm">
+                              <MapPin className="mr-1 h-3 w-3" />
+                              {customer.city}
+                            </div>
+                          )}
+                          {customer.state && (
+                            <div className="text-sm text-muted-foreground">
+                              {customer.state}, {customer.country}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{getTypeBadge(customer.type)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <FileText className="mr-1 h-4 w-4 text-muted-foreground" />
-                          {customer.totalQuotations}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Receipt className="mr-1 h-4 w-4 text-muted-foreground" />
-                          {customer.totalInvoices}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        ₹{customer.totalAmount.toLocaleString()}
-                      </TableCell>
-                      <TableCell>{customer.lastActivity}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -180,11 +209,11 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => onViewCustomer(customer.id)}>
+                            <DropdownMenuItem onClick={() => handleViewCustomer(customer)}>
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onEditCustomer(customer)}>
                               <Edit className="mr-2 h-4 w-4" />
                               Edit Customer
                             </DropdownMenuItem>
@@ -195,10 +224,6 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
                             <DropdownMenuItem>
                               <Receipt className="mr-2 h-4 w-4" />
                               Create Invoice
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Mail className="mr-2 h-4 w-4" />
-                              Send Email
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive" onClick={() => onDelete(customer.id)}>
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -216,6 +241,75 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
         </CardContent>
       </Card>
 
+      {/* Customer View Dialog */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Customer Details</DialogTitle>
+          </DialogHeader>
+          {selectedCustomer && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">BASIC INFORMATION</h3>
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <span className="font-medium">Name:</span> {selectedCustomer.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">Email:</span> {selectedCustomer.email || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Phone:</span> {selectedCustomer.phone || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Company:</span> {selectedCustomer.company || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">GST Number:</span> {selectedCustomer.gst_number || "N/A"}
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">ADDRESS INFORMATION</h3>
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <span className="font-medium">Address:</span> {selectedCustomer.address || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">City:</span> {selectedCustomer.city || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">State:</span> {selectedCustomer.state || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Country:</span> {selectedCustomer.country || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Pincode:</span> {selectedCustomer.pincode || "N/A"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                  Close
+                </Button>
+                <Button onClick={() => {
+                  setShowViewDialog(false);
+                  onEditCustomer(selectedCustomer);
+                }}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Customer
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -227,29 +321,25 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onDelete }: Cust
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-primary">
-              {filteredCustomers.filter(c => c.type === "Enterprise").length}
+              {filteredCustomers.filter(c => c.type === "Business").length}
             </div>
-            <p className="text-xs text-muted-foreground">Enterprise Clients</p>
+            <p className="text-xs text-muted-foreground">Business Clients</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-success">
-              ₹{filteredCustomers
-                .reduce((sum, c) => sum + c.totalAmount, 0)
-                .toLocaleString()}
+            <div className="text-2xl font-bold text-green-600">
+              {filteredCustomers.filter(c => c.gst_number).length}
             </div>
-            <p className="text-xs text-muted-foreground">Total Value</p>
+            <p className="text-xs text-muted-foreground">GST Registered</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-muted-foreground">
-              {filteredCustomers.length > 0
-                ? (filteredCustomers.reduce((sum, c) => sum + c.totalAmount, 0) / filteredCustomers.length).toFixed(0)
-                : "0"}
+            <div className="text-2xl font-bold text-blue-600">
+              {new Set(filteredCustomers.map(c => c.city).filter(Boolean)).size}
             </div>
-            <p className="text-xs text-muted-foreground">Avg. Customer Value</p>
+            <p className="text-xs text-muted-foreground">Cities</p>
           </CardContent>
         </Card>
       </div>

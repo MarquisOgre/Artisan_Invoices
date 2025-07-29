@@ -9,6 +9,11 @@ export interface Customer {
   phone?: string;
   address?: string;
   company?: string;
+  gst_number?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
   created_at: string;
 }
 
@@ -245,6 +250,21 @@ export const useSupabaseData = () => {
     return false;
   };
 
+  const updateCustomer = async (customerId: string, customerData: Partial<Customer>) => {
+    const { data, error } = await supabase
+      .from("customers")
+      .update(customerData)
+      .eq("id", customerId)
+      .select()
+      .single();
+
+    if (!error && data) {
+      setCustomers(prev => prev.map(c => c.id === customerId ? data : c));
+      return data;
+    }
+    return null;
+  };
+
   const deleteQuotation = async (quotationId: string) => {
     const { error } = await supabase
       .from("quotations")
@@ -299,6 +319,7 @@ export const useSupabaseData = () => {
     invoices,
     loading,
     addCustomer,
+    updateCustomer,
     addQuotation,
     addInvoice,
     convertQuotationToInvoice,

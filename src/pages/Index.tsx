@@ -13,12 +13,14 @@ import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const [editingCustomer, setEditingCustomer] = useState(null);
   const { toast } = useToast();
   const {
     customers,
     quotations,
     invoices,
     addCustomer,
+    updateCustomer,
     addQuotation,
     addInvoice,
     convertQuotationToInvoice,
@@ -72,6 +74,12 @@ const Index = () => {
   };
 
   const handleCreateCustomer = () => {
+    setEditingCustomer(null);
+    setCurrentPage("customer-form");
+  };
+
+  const handleEditCustomer = (customer: any) => {
+    setEditingCustomer(customer);
     setCurrentPage("customer-form");
   };
 
@@ -106,13 +114,26 @@ const Index = () => {
   };
 
   const handleSubmitCustomer = async (customerData: any) => {
-    const newCustomer = await addCustomer(customerData);
-    if (newCustomer) {
-      toast({
-        title: "Customer added",
-        description: `${newCustomer.name} has been added to your customer list.`
-      });
-      setCurrentPage("customers");
+    if (editingCustomer) {
+      // Update existing customer
+      const updatedCustomer = await updateCustomer(editingCustomer.id, customerData);
+      if (updatedCustomer) {
+        toast({
+          title: "Customer updated",
+          description: `${updatedCustomer.name} has been updated.`
+        });
+        setCurrentPage("customers");
+      }
+    } else {
+      // Create new customer
+      const newCustomer = await addCustomer(customerData);
+      if (newCustomer) {
+        toast({
+          title: "Customer added",
+          description: `${newCustomer.name} has been added to your customer list.`
+        });
+        setCurrentPage("customers");
+      }
     }
   };
 
@@ -245,6 +266,7 @@ const Index = () => {
             customers={customers}
             onCreateNew={handleCreateCustomer}
             onViewCustomer={handleViewCustomer}
+            onEditCustomer={handleEditCustomer}
             onDelete={deleteCustomer}
           />
         );
@@ -253,6 +275,8 @@ const Index = () => {
           <CustomerForm 
             onSubmit={handleSubmitCustomer}
             onCancel={() => setCurrentPage("customers")}
+            initialData={editingCustomer}
+            mode={editingCustomer ? 'edit' : 'create'}
           />
         );
       case "quotation-form":
