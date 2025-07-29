@@ -28,7 +28,8 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
     valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     notes: "",
     status: "save",
-    gst_applicable: "yes"
+    gst_applicable: "yes",
+    gst_rate: "18"
   });
 
   const [items, setItems] = useState<QuotationItem[]>([
@@ -61,14 +62,18 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
       return;
     }
 
-    const totalAmount = validItems.reduce((sum, item) => sum + item.amount, 0);
+    const subtotal = validItems.reduce((sum, item) => sum + item.amount, 0);
+    const gstAmount = formData.gst_applicable === "yes" ? (subtotal * parseFloat(formData.gst_rate)) / 100 : 0;
+    const totalAmount = subtotal + gstAmount;
 
     setLoading(true);
     try {
       await onSubmit({
         ...formData,
         items: validItems,
-        amount: totalAmount
+        amount: totalAmount,
+        subtotal,
+        gst_amount: gstAmount
       });
       onCancel();
     } catch (error) {
@@ -103,7 +108,9 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
     }
   };
 
-  const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+  const gstAmount = formData.gst_applicable === "yes" ? (subtotal * parseFloat(formData.gst_rate)) / 100 : 0;
+  const totalAmount = subtotal + gstAmount;
 
   return (
     <Card className="max-w-4xl mx-auto">
@@ -141,6 +148,24 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.gst_applicable === "yes" && (
+              <div>
+                <Label htmlFor="gst_rate">GST Rate</Label>
+                <Select value={formData.gst_rate} onValueChange={(value) => handleChange("gst_rate", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0% (No Tax)</SelectItem>
+                    <SelectItem value="5">5% GST</SelectItem>
+                    <SelectItem value="12">12% GST</SelectItem>
+                    <SelectItem value="18">18% GST</SelectItem>
+                    <SelectItem value="28">28% GST</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="status">Status</Label>
@@ -239,8 +264,12 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
               ))}
             </div>
 
-            <div className="text-right mt-4">
-              <p className="text-lg font-semibold">Total: ₹{totalAmount.toFixed(2)}</p>
+            <div className="text-right mt-4 space-y-2">
+              <p className="text-base">Subtotal: ₹{subtotal.toFixed(2)}</p>
+              {formData.gst_applicable === "yes" && (
+                <p className="text-base">GST ({formData.gst_rate}%): ₹{gstAmount.toFixed(2)}</p>
+              )}
+              <p className="text-lg font-semibold border-t pt-2">Grand Total: ₹{totalAmount.toFixed(2)}</p>
             </div>
           </div>
 

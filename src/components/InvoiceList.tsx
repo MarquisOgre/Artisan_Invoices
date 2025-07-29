@@ -54,7 +54,8 @@ const InvoiceList = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const displayInvoices = invoices.map(i => ({
-    id: i.invoice_number || i.id,
+    id: i.id,
+    invoiceNumber: i.invoice_number,
     customer: i.customer?.name || "Unknown Customer",
     amount: i.amount,
     status: i.status,
@@ -136,7 +137,7 @@ const InvoiceList = ({
                 ) : (
                   filteredInvoices.map((invoice) => (
                     <TableRow key={invoice.id} className="hover:bg-muted/50">
-                      <TableCell className="font-medium">{invoice.id}</TableCell>
+                      <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                       <TableCell>{invoice.customer}</TableCell>
                       <TableCell>₹{invoice.amount.toLocaleString()}</TableCell>
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
