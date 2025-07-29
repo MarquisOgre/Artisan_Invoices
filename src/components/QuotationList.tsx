@@ -33,6 +33,7 @@ interface QuotationListProps {
   quotations: any[];
   onCreateNew: () => void;
   onViewQuotation: (id: string) => void;
+  onEditQuotation: (quotation: any) => void;
   onQuotationToInvoice: (quotationId: string) => void;
   onUpdateStatus: (quotationId: string, status: string) => void;
   onDelete: (quotationId: string) => void;
@@ -44,6 +45,7 @@ const QuotationList = ({
   quotations, 
   onCreateNew, 
   onViewQuotation, 
+  onEditQuotation,
   onQuotationToInvoice, 
   onUpdateStatus, 
   onDelete,
@@ -59,7 +61,8 @@ const QuotationList = ({
     amount: q.amount,
     status: q.status,
     date: q.date,
-    validUntil: q.valid_until
+    validUntil: q.valid_until,
+    fullQuotation: q
   }));
 
   const getStatusBadge = (status: string) => {
@@ -143,7 +146,7 @@ const QuotationList = ({
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => console.log('Edit clicked')}>
+                          <DropdownMenuItem onClick={() => onEditQuotation(quotation.fullQuotation)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>

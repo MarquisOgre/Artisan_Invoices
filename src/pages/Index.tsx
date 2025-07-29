@@ -8,12 +8,15 @@ import Settings from "@/pages/Settings";
 import CustomerForm from "@/components/forms/CustomerForm";
 import QuotationForm from "@/components/forms/QuotationForm";
 import InvoiceForm from "@/components/forms/InvoiceForm";
+import QuotationDetails from "@/components/QuotationDetails";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [editingQuotation, setEditingQuotation] = useState(null);
+  const [viewingQuotation, setViewingQuotation] = useState(null);
   const { toast } = useToast();
   const {
     customers,
@@ -86,11 +89,13 @@ const Index = () => {
   const handleViewQuotation = (id: string) => {
     const quotation = quotations.find(q => q.id === id || q.quotation_number === id);
     if (quotation) {
-      toast({
-        title: "Quotation Details",
-        description: `${quotation.quotation_number}: ₹${quotation.amount.toLocaleString()} for ${quotation.customer?.name || 'Unknown Customer'}`
-      });
+      setViewingQuotation(quotation);
     }
+  };
+
+  const handleEditQuotation = (quotation: any) => {
+    setEditingQuotation(quotation);
+    setCurrentPage("quotation-edit-form");
   };
 
   const handleViewInvoice = (id: string) => {
@@ -182,9 +187,24 @@ const Index = () => {
       : invoices.find(i => i.id === id || i.invoice_number === id);
     
     if (item) {
+      // Create a simple PDF content
+      const content = type === "quotation" 
+        ? `Quotation: ${(item as any).quotation_number}\nCustomer: ${(item as any).customer?.name}\nAmount: ₹${item.amount}`
+        : `Invoice: ${(item as any).invoice_number}\nCustomer: ${(item as any).customer?.name}\nAmount: ₹${item.amount}`;
+      
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${type}-${type === "quotation" ? (item as any).quotation_number : (item as any).invoice_number}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
       toast({
         title: "PDF Downloaded",
-        description: `${type.charAt(0).toUpperCase() + type.slice(1)} ${type === "quotation" ? (item as any).quotation_number : (item as any).invoice_number} PDF has been downloaded.`
+        description: `${type.charAt(0).toUpperCase() + type.slice(1)} has been downloaded.`
       });
     }
   };
@@ -240,6 +260,7 @@ const Index = () => {
             quotations={quotations}
             onCreateNew={handleCreateQuotation}
             onViewQuotation={handleViewQuotation}
+            onEditQuotation={handleEditQuotation}
             onQuotationToInvoice={handleQuotationToInvoice}
             onUpdateStatus={updateQuotationStatus}
             onDelete={deleteQuotation}
@@ -287,6 +308,23 @@ const Index = () => {
             onCancel={() => setCurrentPage("quotations")}
           />
         );
+      case "quotation-edit-form":
+        return (
+          <QuotationForm 
+            customers={customers}
+            onSubmit={async (data) => {
+              // Handle quotation update logic here
+              toast({
+                title: "Quotation updated",
+                description: "Quotation has been updated successfully."
+              });
+              setCurrentPage("quotations");
+            }}
+            onCancel={() => setCurrentPage("quotations")}
+            initialData={editingQuotation}
+            mode="edit"
+          />
+        );
       case "invoice-form":
         return (
           <InvoiceForm 
@@ -319,6 +357,13 @@ const Index = () => {
       onPageChange={handlePageChange}
     >
       {renderPage()}
+      
+      {/* Quotation Details Modal */}
+      <QuotationDetails 
+        quotation={viewingQuotation}
+        isOpen={!!viewingQuotation}
+        onClose={() => setViewingQuotation(null)}
+      />
     </Layout>
   );
 };

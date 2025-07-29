@@ -12,6 +12,8 @@ interface QuotationFormProps {
   customers: any[];
   onSubmit: (quotationData: any) => Promise<void>;
   onCancel: () => void;
+  initialData?: any;
+  mode?: 'create' | 'edit';
 }
 
 interface QuotationItem {
@@ -21,20 +23,22 @@ interface QuotationItem {
   amount: number;
 }
 
-const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) => {
+const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'create' }: QuotationFormProps) => {
   const [formData, setFormData] = useState({
-    customer_id: "",
-    date: new Date().toISOString().split('T')[0],
-    valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    notes: "",
-    status: "save",
-    gst_applicable: "yes",
-    gst_rate: "18"
+    customer_id: initialData?.customer_id || "",
+    date: initialData?.date || new Date().toISOString().split('T')[0],
+    valid_until: initialData?.valid_until || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    notes: initialData?.notes || "",
+    status: initialData?.status || "save",
+    gst_applicable: initialData?.gst_applicable || "yes",
+    gst_rate: initialData?.gst_rate || "18"
   });
 
-  const [items, setItems] = useState<QuotationItem[]>([
-    { description: "", quantity: 1, rate: 0, amount: 0 }
-  ]);
+  const [items, setItems] = useState<QuotationItem[]>(
+    initialData?.items && initialData.items.length > 0 
+      ? initialData.items 
+      : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
+  );
 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -115,7 +119,7 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle>Create New Quotation</CardTitle>
+        <CardTitle>{mode === 'edit' ? 'Edit Quotation' : 'Create New Quotation'}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -289,7 +293,7 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Quotation"}
+              {loading ? (mode === 'edit' ? "Updating..." : "Creating...") : (mode === 'edit' ? "Update Quotation" : "Create Quotation")}
             </Button>
           </div>
         </form>
