@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { handleHardcodedLogin } from "@/utils/createAdminUser";
 
 export default function Auth() {
   const { user, loading } = useAuth();
@@ -65,10 +66,8 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        // Use hardcoded login function that handles admin user creation
+        const { data, error } = await handleHardcodedLogin(email, password);
 
         if (error) {
           toast({
