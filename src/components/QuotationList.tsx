@@ -54,6 +54,7 @@ const QuotationList = ({
 
   const displayQuotations = quotations.map(q => ({
     id: q.id,
+    quotationNumber: q.quotation_number,
     customer: q.customer?.name || 'Unknown Customer',
     amount: q.amount,
     status: q.status,
@@ -80,7 +81,7 @@ const QuotationList = ({
 
   const filteredQuotations = displayQuotations.filter(quotation =>
     quotation.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quotation.id.toLowerCase().includes(searchTerm.toLowerCase())
+    quotation.quotationNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -124,7 +125,7 @@ const QuotationList = ({
               <TableBody>
                 {filteredQuotations.map((quotation) => (
                   <TableRow key={quotation.id} className="hover:bg-muted/50">
-                    <TableCell className="font-medium">{quotation.id}</TableCell>
+                    <TableCell className="font-medium">{quotation.quotationNumber}</TableCell>
                     <TableCell>{quotation.customer}</TableCell>
                     <TableCell>₹{quotation.amount.toLocaleString()}</TableCell>
                     <TableCell>{getStatusBadge(quotation.status)}</TableCell>
