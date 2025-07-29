@@ -27,7 +27,8 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
     date: new Date().toISOString().split('T')[0],
     valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     notes: "",
-    status: "save"
+    status: "save",
+    gst_applicable: "yes"
   });
 
   const [items, setItems] = useState<QuotationItem[]>([
@@ -124,6 +125,19 @@ const QuotationForm = ({ customers, onSubmit, onCancel }: QuotationFormProps) =>
                       {customer.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="gst_applicable">GST Applicable</Label>
+              <Select value={formData.gst_applicable} onValueChange={(value) => handleChange("gst_applicable", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
                 </SelectContent>
               </Select>
             </div>

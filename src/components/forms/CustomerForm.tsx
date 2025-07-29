@@ -23,7 +23,6 @@ const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' }: Cust
     gst_number: "",
     city: "",
     state: "",
-    country: "",
     pincode: ""
   });
   const [loading, setLoading] = useState(false);
@@ -40,7 +39,6 @@ const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' }: Cust
         gst_number: initialData.gst_number || "",
         city: initialData.city || "",
         state: initialData.state || "",
-        country: initialData.country || "",
         pincode: initialData.pincode || ""
       });
     }
@@ -159,7 +157,7 @@ const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' }: Cust
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="city">City</Label>
                 <Input
@@ -177,16 +175,6 @@ const CustomerForm = ({ onSubmit, onCancel, initialData, mode = 'create' }: Cust
                   value={formData.state}
                   onChange={(e) => handleChange("state", e.target.value)}
                   placeholder="Enter state"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  value={formData.country}
-                  onChange={(e) => handleChange("country", e.target.value)}
-                  placeholder="Enter country"
                 />
               </div>
 

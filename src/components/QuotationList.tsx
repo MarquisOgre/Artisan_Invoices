@@ -25,7 +25,8 @@ import {
   FileText, 
   Trash2,
   Download,
-  Send
+  Send,
+  Printer
 } from "lucide-react";
 
 interface QuotationListProps {
@@ -148,6 +149,10 @@ const QuotationList = ({
                           <DropdownMenuItem onClick={() => onDownloadPDF?.(quotation.id)}>
                             <Download className="mr-2 h-4 w-4" />
                             Download PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => window.print()}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onQuotationToInvoice(quotation.id)}>
                             <FileText className="mr-2 h-4 w-4" />

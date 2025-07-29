@@ -166,7 +166,7 @@ const Settings = () => {
               />
             </div>
             <div>
-              <Label htmlFor="taxNumber">Tax Number</Label>
+              <Label htmlFor="taxNumber">GST Number</Label>
               <Input
                 id="taxNumber"
                 value={companySettings.taxNumber}

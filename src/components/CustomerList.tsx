@@ -311,35 +311,11 @@ const CustomerList = ({ customers, onCreateNew, onViewCustomer, onEditCustomer, 
       </Dialog>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold">{filteredCustomers.length}</div>
             <p className="text-xs text-muted-foreground">Total Customers</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-primary">
-              {filteredCustomers.filter(c => c.type === "Business").length}
-            </div>
-            <p className="text-xs text-muted-foreground">Business Clients</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">
-              {filteredCustomers.filter(c => c.gst_number).length}
-            </div>
-            <p className="text-xs text-muted-foreground">GST Registered</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">
-              {new Set(filteredCustomers.map(c => c.city).filter(Boolean)).size}
-            </div>
-            <p className="text-xs text-muted-foreground">Cities</p>
           </CardContent>
         </Card>
       </div>

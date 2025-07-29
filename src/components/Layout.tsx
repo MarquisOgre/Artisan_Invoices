@@ -65,7 +65,7 @@ const Layout = ({ children, currentPage, onPageChange }: LayoutProps) => {
           <div className="flex items-center justify-between h-full">
             {/* Logo and Brand */}
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="Artisan Apparels" className="w-10 h-10" />
+              <img src="/logo.png" alt="Company Logo" className="w-10 h-10" />
               <h1 className="text-xl font-bold text-primary">ARTISAN</h1>
             </div>
 

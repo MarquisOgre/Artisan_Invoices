@@ -127,8 +127,16 @@ export const useSupabaseData = () => {
       .select("*", { count: "exact", head: true })
       .eq("user_id", user.id);
 
-    // Generate quotation number starting from 001
-    const quotationNumber = `QUO-${String((count || 0) + 1).padStart(3, '0')}`;
+    // Get quotation prefix from settings or use default
+    const { data: settings } = await supabase
+      .from('settings')
+      .select('setting_data')
+      .eq('user_id', user.id)
+      .eq('setting_type', 'invoice')
+      .single();
+
+    const quotationPrefix = (settings?.setting_data as any)?.quotationPrefix || 'QUO';
+    const quotationNumber = `${quotationPrefix}-${String((count || 0) + 1).padStart(3, '0')}`;
 
     const { data, error } = await supabase
       .from("quotations")
