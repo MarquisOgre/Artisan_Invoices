@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const ADMIN_EMAIL = "admin@gmail.com";
+const ADMIN_EMAIL = "admin@example.com";
 const ADMIN_PASSWORD = "123456";
 
 export const createHardcodedAdminUser = async () => {
