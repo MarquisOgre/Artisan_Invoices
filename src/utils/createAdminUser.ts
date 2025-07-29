@@ -48,26 +48,47 @@ export const createHardcodedAdminUser = async () => {
 // Alternative simpler approach - hardcoded login bypass
 export const handleHardcodedLogin = async (email: string, password: string) => {
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    // Try to sign up the user first (this will fail if they exist)
-    try {
-      await supabase.auth.signUp({
+    // First, try to sign in with existing credentials
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+    });
+
+    // If sign in succeeds, return the result
+    if (signInData?.user && !signInError) {
+      return { data: signInData, error: null };
+    }
+
+    // If sign in fails with "Invalid login credentials", the user doesn't exist
+    // So create them by signing up first
+    if (signInError?.message === "Invalid login credentials") {
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: ADMIN_EMAIL,
         password: ADMIN_PASSWORD,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
         },
       });
-    } catch (error) {
-      // User might already exist, ignore error
+
+      // If signup succeeds, the user is automatically logged in
+      if (signUpData?.user && !signUpError) {
+        return { data: signUpData, error: null };
+      }
+
+      // If signup fails because user already exists, try signing in again
+      if (signUpError?.message?.includes("already registered")) {
+        return await supabase.auth.signInWithPassword({
+          email: ADMIN_EMAIL,
+          password: ADMIN_PASSWORD,
+        });
+      }
+
+      // Return signup error if it's something else
+      return { data: null, error: signUpError };
     }
 
-    // Now try to sign in
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-    });
-
-    return { data, error };
+    // Return the original sign in error if it's not about credentials
+    return { data: null, error: signInError };
   }
 
   // For non-admin users, proceed with normal login
