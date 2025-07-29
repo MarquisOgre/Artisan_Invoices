@@ -133,7 +133,7 @@ export const useSupabaseData = () => {
       .select('setting_data')
       .eq('user_id', user.id)
       .eq('setting_type', 'invoice')
-      .single();
+      .maybeSingle();
 
     const quotationPrefix = (settings?.setting_data as any)?.quotationPrefix || 'QUO';
     const quotationNumber = `${quotationPrefix}-${String((count || 0) + 1).padStart(3, '0')}`;
@@ -322,9 +322,16 @@ export const useSupabaseData = () => {
   };
 
   const updateInvoiceStatus = async (invoiceId: string, status: string) => {
+    const updateData: any = { status };
+    
+    // If marking as paid, also set the paid_date
+    if (status === "paid") {
+      updateData.paid_date = new Date().toISOString().split('T')[0];
+    }
+    
     const { data, error } = await supabase
       .from("invoices")
-      .update({ status })
+      .update(updateData)
       .eq("id", invoiceId)
       .select(`
         *,

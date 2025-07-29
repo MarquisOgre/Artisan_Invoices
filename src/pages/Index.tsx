@@ -153,33 +153,66 @@ const Index = () => {
   };
 
   const handleSubmitQuotation = async (quotationData: any) => {
-    const newQuotation = await addQuotation(quotationData);
-    if (newQuotation) {
+    try {
+      const newQuotation = await addQuotation(quotationData);
+      if (newQuotation) {
+        toast({
+          title: "Quotation created",
+          description: `Quotation ${newQuotation.quotation_number} has been created.`
+        });
+        setCurrentPage("quotations");
+      } else {
+        throw new Error("Failed to create quotation");
+      }
+    } catch (error) {
+      console.error("Error creating quotation:", error);
       toast({
-        title: "Quotation created",
-        description: `Quotation ${newQuotation.quotation_number} has been created.`
+        title: "Error",
+        description: "Failed to create quotation. Please try again.",
+        variant: "destructive"
       });
-      setCurrentPage("quotations");
     }
   };
 
   const handleSubmitInvoice = async (invoiceData: any) => {
-    const newInvoice = await addInvoice(invoiceData);
-    if (newInvoice) {
+    try {
+      const newInvoice = await addInvoice(invoiceData);
+      if (newInvoice) {
+        toast({
+          title: "Invoice created",
+          description: `Invoice ${newInvoice.invoice_number} has been created.`
+        });
+        setCurrentPage("invoices");
+      } else {
+        throw new Error("Failed to create invoice");
+      }
+    } catch (error) {
+      console.error("Error creating invoice:", error);
       toast({
-        title: "Invoice created",
-        description: `Invoice ${newInvoice.invoice_number} has been created.`
+        title: "Error",
+        description: "Failed to create invoice. Please try again.",
+        variant: "destructive"
       });
-      setCurrentPage("invoices");
     }
   };
 
   const handleMarkAsPaid = async (invoiceId: string) => {
-    const updatedInvoice = await updateInvoiceStatus(invoiceId, "paid");
-    if (updatedInvoice) {
+    try {
+      const updatedInvoice = await updateInvoiceStatus(invoiceId, "paid");
+      if (updatedInvoice) {
+        toast({
+          title: "Invoice marked as paid",
+          description: "The invoice has been marked as paid."
+        });
+      } else {
+        throw new Error("Failed to update invoice");
+      }
+    } catch (error) {
+      console.error("Error marking invoice as paid:", error);
       toast({
-        title: "Invoice marked as paid",
-        description: "The invoice has been marked as paid."
+        title: "Error",
+        description: "Failed to mark invoice as paid. Please try again.",
+        variant: "destructive"
       });
     }
   };

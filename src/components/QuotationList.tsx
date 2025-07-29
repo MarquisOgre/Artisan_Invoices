@@ -168,7 +168,13 @@ const QuotationList = ({
                               Send to Customer
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem className="text-destructive" onClick={() => onDelete(quotation.id)}>
+                          <DropdownMenuItem 
+                            className="text-destructive" 
+                            onClick={() => {
+                              console.log("Delete quotation:", quotation.id);
+                              onDelete(quotation.id);
+                            }}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>

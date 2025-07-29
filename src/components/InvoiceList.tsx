@@ -63,7 +63,7 @@ const InvoiceList = ({
     status: i.status,
     date: i.date,
     dueDate: i.due_date,
-    paidDate: i.paidDate || "-",
+    paidDate: i.paid_date || "-",
     fullInvoice: i
   }));
 
@@ -181,7 +181,13 @@ const InvoiceList = ({
                                 Mark as Paid
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem className="text-destructive" onClick={() => onDelete(invoice.id)}>
+                            <DropdownMenuItem 
+                              className="text-destructive" 
+                              onClick={() => {
+                                console.log("Delete invoice:", invoice.id);
+                                onDelete(invoice.id);
+                              }}
+                            >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete
                             </DropdownMenuItem>
