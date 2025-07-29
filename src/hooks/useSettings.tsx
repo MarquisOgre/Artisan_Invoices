@@ -11,6 +11,12 @@ export interface CompanySettings {
   website: string;
   taxNumber: string;
   logo: string;
+  bankName?: string;
+  accountNumber?: string;
+  routingNumber?: string;
+  accountHolderName?: string;
+  branchAddress?: string;
+  swiftCode?: string;
 }
 
 export interface InvoiceSettings {
@@ -38,7 +44,13 @@ export const useSettings = () => {
     address: "123 Business Street, City, State 12345",
     website: "www.yourcompany.com",
     taxNumber: "GSTIN123456789",
-    logo: ""
+    logo: "",
+    bankName: "",
+    accountNumber: "",
+    routingNumber: "",
+    accountHolderName: "",
+    branchAddress: "",
+    swiftCode: ""
   });
 
   const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettings>({

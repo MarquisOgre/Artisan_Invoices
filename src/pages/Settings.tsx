@@ -185,6 +185,67 @@ const Settings = () => {
             />
           </div>
 
+          {/* Bank Details Section */}
+          <div className="pt-4 border-t">
+            <h3 className="text-lg font-semibold mb-4">Bank Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="bankName">Bank Name</Label>
+                <Input
+                  id="bankName"
+                  value={companySettings.bankName || ""}
+                  onChange={(e) => handleCompanyChange("bankName", e.target.value)}
+                  placeholder="Enter bank name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="accountNumber">Account Number</Label>
+                <Input
+                  id="accountNumber"
+                  value={companySettings.accountNumber || ""}
+                  onChange={(e) => handleCompanyChange("accountNumber", e.target.value)}
+                  placeholder="Enter account number"
+                />
+              </div>
+              <div>
+                <Label htmlFor="routingNumber">IFSC Code / Routing Number</Label>
+                <Input
+                  id="routingNumber"
+                  value={companySettings.routingNumber || ""}
+                  onChange={(e) => handleCompanyChange("routingNumber", e.target.value)}
+                  placeholder="Enter IFSC/routing number"
+                />
+              </div>
+              <div>
+                <Label htmlFor="accountHolderName">Account Holder Name</Label>
+                <Input
+                  id="accountHolderName"
+                  value={companySettings.accountHolderName || ""}
+                  onChange={(e) => handleCompanyChange("accountHolderName", e.target.value)}
+                  placeholder="Enter account holder name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="branchAddress">Branch Address</Label>
+                <Input
+                  id="branchAddress"
+                  value={companySettings.branchAddress || ""}
+                  onChange={(e) => handleCompanyChange("branchAddress", e.target.value)}
+                  placeholder="Enter branch address"
+                />
+              </div>
+              <div>
+                <Label htmlFor="swiftCode">SWIFT Code (Optional)</Label>
+                <Input
+                  id="swiftCode"
+                  value={companySettings.swiftCode || ""}
+                  onChange={(e) => handleCompanyChange("swiftCode", e.target.value)}
+                  placeholder="Enter SWIFT code"
+                />
+              </div>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="logo">Company Logo</Label>
             <div className="flex items-center space-x-4">

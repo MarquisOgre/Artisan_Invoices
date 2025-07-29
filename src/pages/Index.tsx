@@ -11,6 +11,8 @@ import InvoiceForm from "@/components/forms/InvoiceForm";
 import QuotationDetails from "@/components/QuotationDetails";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
+import { generateQuotationPDF } from "@/utils/pdfGenerator";
+import { useSettings } from "@/hooks/useSettings";
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -18,6 +20,7 @@ const Index = () => {
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [viewingQuotation, setViewingQuotation] = useState(null);
   const { toast } = useToast();
+  const { companySettings } = useSettings();
   const {
     customers,
     quotations,
@@ -186,17 +189,29 @@ const Index = () => {
       ? quotations.find(q => q.id === id || q.quotation_number === id)
       : invoices.find(i => i.id === id || i.invoice_number === id);
     
-    if (item) {
-      // Create a simple PDF content
-      const content = type === "quotation" 
-        ? `Quotation: ${(item as any).quotation_number}\nCustomer: ${(item as any).customer?.name}\nAmount: ₹${item.amount}`
-        : `Invoice: ${(item as any).invoice_number}\nCustomer: ${(item as any).customer?.name}\nAmount: ₹${item.amount}`;
-      
+    if (item && type === "quotation") {
+      try {
+        generateQuotationPDF(item as any, companySettings);
+        toast({
+          title: "PDF Generated",
+          description: "Quotation PDF has been downloaded successfully."
+        });
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast({
+          title: "Error",
+          description: "Failed to generate PDF. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } else if (item && type === "invoice") {
+      // Simple text download for invoices (can be enhanced later)
+      const content = `Invoice: ${(item as any).invoice_number}\nCustomer: ${(item as any).customer?.name}\nAmount: ₹${item.amount}`;
       const blob = new Blob([content], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${type}-${type === "quotation" ? (item as any).quotation_number : (item as any).invoice_number}.txt`;
+      link.download = `${(item as any).invoice_number}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -204,7 +219,7 @@ const Index = () => {
       
       toast({
         title: "PDF Downloaded",
-        description: `${type.charAt(0).toUpperCase() + type.slice(1)} has been downloaded.`
+        description: "Invoice has been downloaded."
       });
     }
   };
