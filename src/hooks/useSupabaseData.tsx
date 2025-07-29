@@ -273,6 +273,28 @@ export const useSupabaseData = () => {
     return null;
   };
 
+  const updateQuotation = async (quotationId: string, quotationData: Partial<Quotation>) => {
+    const { data, error } = await supabase
+      .from("quotations")
+      .update(quotationData)
+      .eq("id", quotationId)
+      .select(`
+        *,
+        customer:customers(*)
+      `)
+      .single();
+
+    if (!error && data) {
+      const processedData = {
+        ...data,
+        items: Array.isArray(data.items) ? data.items : []
+      };
+      setQuotations(prev => prev.map(q => q.id === quotationId ? processedData : q));
+      return processedData;
+    }
+    return null;
+  };
+
   const deleteQuotation = async (quotationId: string) => {
     const { error } = await supabase
       .from("quotations")
@@ -329,6 +351,7 @@ export const useSupabaseData = () => {
     addCustomer,
     updateCustomer,
     addQuotation,
+    updateQuotation,
     addInvoice,
     convertQuotationToInvoice,
     updateQuotationStatus,

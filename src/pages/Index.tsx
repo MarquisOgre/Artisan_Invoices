@@ -9,6 +9,7 @@ import CustomerForm from "@/components/forms/CustomerForm";
 import QuotationForm from "@/components/forms/QuotationForm";
 import InvoiceForm from "@/components/forms/InvoiceForm";
 import QuotationDetails from "@/components/QuotationDetails";
+import InvoiceDetails from "@/components/InvoiceDetails";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 import { generateQuotationPDF } from "@/utils/pdfGenerator";
@@ -18,7 +19,9 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [editingQuotation, setEditingQuotation] = useState(null);
+  const [editingInvoice, setEditingInvoice] = useState(null);
   const [viewingQuotation, setViewingQuotation] = useState(null);
+  const [viewingInvoice, setViewingInvoice] = useState(null);
   const { toast } = useToast();
   const { companySettings } = useSettings();
   const {
@@ -28,6 +31,7 @@ const Index = () => {
     addCustomer,
     updateCustomer,
     addQuotation,
+    updateQuotation,
     addInvoice,
     convertQuotationToInvoice,
     updateQuotationStatus,
@@ -104,12 +108,15 @@ const Index = () => {
   const handleViewInvoice = (id: string) => {
     const invoice = invoices.find(i => i.id === id || i.invoice_number === id);
     if (invoice) {
-      toast({
-        title: "Invoice Details", 
-        description: `${invoice.invoice_number}: ₹${invoice.amount.toLocaleString()} for ${invoice.customer?.name || 'Unknown Customer'}`
-      });
+      setViewingInvoice(invoice);
     }
   };
+
+  const handleEditInvoice = (invoice: any) => {
+    setEditingInvoice(invoice);
+    setCurrentPage("invoice-edit-form");
+  };
+
 
   const handleViewCustomer = (id: string) => {
     const customer = customers.find(c => c.id === id);
@@ -289,6 +296,7 @@ const Index = () => {
             invoices={invoices}
             onCreateNew={handleCreateInvoice}
             onViewInvoice={handleViewInvoice}
+            onEditInvoice={handleEditInvoice}
             onDelete={deleteInvoice}
             onMarkAsPaid={handleMarkAsPaid}
             onSendReminder={handleSendReminder}
@@ -327,14 +335,19 @@ const Index = () => {
         return (
           <QuotationForm 
             customers={customers}
-            onSubmit={async (data) => {
-              // Handle quotation update logic here
-              toast({
-                title: "Quotation updated",
-                description: "Quotation has been updated successfully."
-              });
-              setCurrentPage("quotations");
-            }}
+             onSubmit={async (data) => {
+               if (editingQuotation) {
+                 const updatedQuotation = await updateQuotation(editingQuotation.id, data);
+                 if (updatedQuotation) {
+                   toast({
+                     title: "Quotation updated",
+                     description: "Quotation has been updated successfully."
+                   });
+                   setEditingQuotation(null);
+                   setCurrentPage("quotations");
+                 }
+               }
+             }}
             onCancel={() => setCurrentPage("quotations")}
             initialData={editingQuotation}
             mode="edit"
@@ -346,6 +359,26 @@ const Index = () => {
             customers={customers}
             onSubmit={handleSubmitInvoice}
             onCancel={() => setCurrentPage("invoices")}
+          />
+        );
+      case "invoice-edit-form":
+        return (
+          <InvoiceForm 
+            customers={customers}
+            onSubmit={async (data) => {
+              if (editingInvoice) {
+                // Handle invoice update logic here
+                toast({
+                  title: "Invoice updated",
+                  description: "Invoice has been updated successfully."
+                });
+                setEditingInvoice(null);
+                setCurrentPage("invoices");
+              }
+            }}
+            onCancel={() => setCurrentPage("invoices")}
+            initialData={editingInvoice}
+            mode="edit"
           />
         );
       case "settings":
@@ -378,6 +411,13 @@ const Index = () => {
         quotation={viewingQuotation}
         isOpen={!!viewingQuotation}
         onClose={() => setViewingQuotation(null)}
+      />
+      
+      {/* Invoice Details Modal */}
+      <InvoiceDetails 
+        invoice={viewingInvoice}
+        isOpen={!!viewingInvoice}
+        onClose={() => setViewingInvoice(null)}
       />
     </Layout>
   );

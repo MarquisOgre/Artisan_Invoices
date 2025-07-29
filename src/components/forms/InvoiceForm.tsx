@@ -12,6 +12,8 @@ interface InvoiceFormProps {
   customers: any[];
   onSubmit: (invoiceData: any) => Promise<void>;
   onCancel: () => void;
+  initialData?: any;
+  mode?: 'create' | 'edit';
 }
 
 interface InvoiceItem {
@@ -21,20 +23,22 @@ interface InvoiceItem {
   amount: number;
 }
 
-const InvoiceForm = ({ customers, onSubmit, onCancel }: InvoiceFormProps) => {
+const InvoiceForm = ({ customers, onSubmit, onCancel, initialData, mode = 'create' }: InvoiceFormProps) => {
   const [formData, setFormData] = useState({
-    customer_id: "",
-    date: new Date().toISOString().split('T')[0],
-    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    notes: "",
-    status: "draft",
-    gst_applicable: "yes",
-    gst_rate: "18"
+    customer_id: initialData?.customer_id || "",
+    date: initialData?.date || new Date().toISOString().split('T')[0],
+    due_date: initialData?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    notes: initialData?.notes || "",
+    status: initialData?.status || "draft",
+    gst_applicable: initialData?.gst_applicable || "yes",
+    gst_rate: initialData?.gst_rate || "18"
   });
 
-  const [items, setItems] = useState<InvoiceItem[]>([
-    { description: "", quantity: 1, rate: 0, amount: 0 }
-  ]);
+  const [items, setItems] = useState<InvoiceItem[]>(
+    initialData?.items && initialData.items.length > 0 
+      ? initialData.items 
+      : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
+  );
 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -115,7 +119,7 @@ const InvoiceForm = ({ customers, onSubmit, onCancel }: InvoiceFormProps) => {
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle>Create New Invoice</CardTitle>
+        <CardTitle>{mode === 'edit' ? 'Edit Invoice' : 'Create New Invoice'}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -291,7 +295,7 @@ const InvoiceForm = ({ customers, onSubmit, onCancel }: InvoiceFormProps) => {
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Invoice"}
+              {loading ? (mode === 'edit' ? "Updating..." : "Creating...") : (mode === 'edit' ? "Update Invoice" : "Create Invoice")}
             </Button>
           </div>
         </form>

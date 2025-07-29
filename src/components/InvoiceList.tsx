@@ -34,6 +34,7 @@ interface InvoiceListProps {
   invoices: any[];
   onCreateNew: () => void;
   onViewInvoice: (id: string) => void;
+  onEditInvoice: (invoice: any) => void;
   onDelete: (invoiceId: string) => void;
   onMarkAsPaid?: (invoiceId: string) => void;
   onSendReminder?: (invoiceId: string) => void;
@@ -45,6 +46,7 @@ const InvoiceList = ({
   invoices,
   onCreateNew,
   onViewInvoice,
+  onEditInvoice,
   onDelete,
   onMarkAsPaid,
   onSendReminder,
@@ -61,7 +63,8 @@ const InvoiceList = ({
     status: i.status,
     date: i.date,
     dueDate: i.due_date,
-    paidDate: i.paidDate || "-"
+    paidDate: i.paidDate || "-",
+    fullInvoice: i
   }));
 
   const getStatusBadge = (status: string) => {
@@ -158,7 +161,7 @@ const InvoiceList = ({
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onEditInvoice(invoice.fullInvoice)}>
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
