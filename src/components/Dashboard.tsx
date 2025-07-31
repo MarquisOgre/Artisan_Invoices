@@ -38,14 +38,14 @@ const Dashboard = ({ quotations, invoices, customers, onCreateQuotation, onCreat
     },
     {
       title: "Active Quotations",
-      value: quotations.filter(q => q.status === "sent").length.toString(),
+      value: quotations.filter(q => q.status === "sent" || q.status === "save").length.toString(),
       change: "+3",
       icon: FileText,
       color: "text-primary"
     },
     {
-      title: "Pending Invoices",
-      value: invoices.filter(i => i.status === "pending" || i.status === "sent").length.toString(),
+      title: "Pending Invoices", 
+      value: invoices.filter(i => i.status === "pending" || i.status === "sent" || i.status === "draft" || i.status === "save").length.toString(),
       change: "-2",
       icon: Receipt,
       color: "text-warning"
@@ -77,6 +77,7 @@ const Dashboard = ({ quotations, invoices, customers, onCreateQuotation, onCreat
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
+      draft: { variant: "secondary", label: "Draft" },
       save: { variant: "secondary", label: "Save" },
       sent: { variant: "outline", label: "Sent" },
       accepted: { variant: "default", label: "Accepted" },
