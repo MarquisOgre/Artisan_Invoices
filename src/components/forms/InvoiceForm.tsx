@@ -168,7 +168,7 @@ const InvoiceForm = ({ customers, onSubmit, onCancel, initialData, mode = 'creat
 
             <div>
               <Label>Tax Type</Label>
-              <div className="mt-2 space-y-2">
+              <div className="mt-2 flex gap-6">
                 <Label className="flex items-center">
                   <input
                     type="radio"

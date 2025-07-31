@@ -185,9 +185,16 @@ export const generateQuotationPDF = (quotation: QuotationData, companySettings: 
   if (taxAmount > 0) {
     doc.text(`Subtotal: ₹${subtotal.toFixed(2)}`, pageWidth - 80, yPosition);
     yPosition += 6;
-    const taxLabel = quotation.tax_type === 'IGST' ? 'IGST (5%)' : 'CGST (2.5%) + SGST (2.5%)';
-    doc.text(`${taxLabel}: ₹${taxAmount.toFixed(2)}`, pageWidth - 80, yPosition);
-    yPosition += 6;
+    if (quotation.tax_type === 'IGST') {
+      doc.text(`IGST (5%): ₹${taxAmount.toFixed(2)}`, pageWidth - 80, yPosition);
+      yPosition += 6;
+    } else {
+      const halfTax = taxAmount / 2;
+      doc.text(`CGST (2.5%): ₹${halfTax.toFixed(2)}`, pageWidth - 80, yPosition);
+      yPosition += 6;
+      doc.text(`SGST (2.5%): ₹${halfTax.toFixed(2)}`, pageWidth - 80, yPosition);
+      yPosition += 6;
+    }
   }
   
   doc.setFontSize(12);

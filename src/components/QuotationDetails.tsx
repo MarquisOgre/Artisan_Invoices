@@ -134,10 +134,23 @@ const QuotationDetails = ({ quotation, isOpen, onClose }: QuotationDetailsProps)
                     <span>Subtotal:</span>
                     <span>₹{quotation.subtotal?.toFixed(2) || '0.00'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>{quotation.tax_type === 'IGST' ? 'IGST (5%)' : 'CGST (2.5%) + SGST (2.5%)'}:</span>
-                    <span>₹{quotation.tax_amount?.toFixed(2) || '0.00'}</span>
-                  </div>
+                  {quotation.tax_type === 'IGST' ? (
+                    <div className="flex justify-between">
+                      <span>IGST (5%):</span>
+                      <span>₹{quotation.tax_amount?.toFixed(2) || '0.00'}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span>CGST (2.5%):</span>
+                        <span>₹{((quotation.tax_amount || 0) / 2).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>SGST (2.5%):</span>
+                        <span>₹{((quotation.tax_amount || 0) / 2).toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total Amount:</span>

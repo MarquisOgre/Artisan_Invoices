@@ -134,10 +134,23 @@ const InvoiceDetails = ({ invoice, isOpen, onClose }: InvoiceDetailsProps) => {
                     <span>Subtotal:</span>
                     <span>₹{invoice.subtotal?.toFixed(2) || '0.00'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>{invoice.tax_type === 'IGST' ? 'IGST (5%)' : 'CGST (2.5%) + SGST (2.5%)'}:</span>
-                    <span>₹{invoice.tax_amount?.toFixed(2) || '0.00'}</span>
-                  </div>
+                  {invoice.tax_type === 'IGST' ? (
+                    <div className="flex justify-between">
+                      <span>IGST (5%):</span>
+                      <span>₹{invoice.tax_amount?.toFixed(2) || '0.00'}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span>CGST (2.5%):</span>
+                        <span>₹{((invoice.tax_amount || 0) / 2).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>SGST (2.5%):</span>
+                        <span>₹{((invoice.tax_amount || 0) / 2).toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total Amount:</span>
