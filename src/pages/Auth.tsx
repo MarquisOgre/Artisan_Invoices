@@ -74,11 +74,13 @@ export default function Auth() {
             title: "Login Failed",
             description: error.message,
             variant: "destructive",
+            duration: 5000,            
           });
         } else {
           toast({
             title: "Success",
             description: "Logged in successfully!",
+            duration: 5000,
           });
         }
       } else {
@@ -95,11 +97,13 @@ export default function Auth() {
             title: "Sign Up Failed",
             description: error.message,
             variant: "destructive",
+            duration: 5000,            
           });
         } else {
           toast({
             title: "Success",
             description: "Account created successfully! Please check your email for verification.",
+            duration: 5000,            
           });
         }
       }
@@ -108,6 +112,7 @@ export default function Auth() {
         title: "Error",
         description: "An unexpected error occurred",
         variant: "destructive",
+        duration: 5000,        
       });
     } finally {
       setIsSubmitting(false);
