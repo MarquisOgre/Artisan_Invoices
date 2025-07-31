@@ -47,220 +47,177 @@ export const generateQuotationPDF = (quotation: QuotationData, companySettings: 
   const pageWidth = doc.internal.pageSize.width;
   let yPosition = 20;
 
-  // Header with company name
-  doc.setFontSize(20);
+  // Header section with company name and details
+  doc.setFontSize(24);
   doc.setTextColor(40, 40, 40);
-  doc.text(companySettings.name || "Company Name", 20, yPosition);
-  
-  // QUOTATION title
-  doc.setFontSize(16);
-  doc.setTextColor(100, 100, 100);
-  doc.text("QUOTATION", pageWidth - 60, yPosition);
-  yPosition += 15;
-
-  // Company details
-  doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
-  if (companySettings.address) {
-    const addressLines = doc.splitTextToSize(companySettings.address, 80);
-    doc.text(addressLines, 20, yPosition);
-    yPosition += addressLines.length * 4;
-  }
-  if (companySettings.email) {
-    doc.text(`Email: ${companySettings.email}`, 20, yPosition);
-    yPosition += 4;
-  }
-  if (companySettings.phone) {
-    doc.text(`Phone: ${companySettings.phone}`, 20, yPosition);
-    yPosition += 4;
-  }
-  if (companySettings.website) {
-    doc.text(`Website: ${companySettings.website}`, 20, yPosition);
-    yPosition += 4;
-  }
-  if (companySettings.taxNumber) {
-    doc.text(`GST Number: ${companySettings.taxNumber}`, 20, yPosition);
-    yPosition += 4;
-  }
-
-  // Quotation details (right side)
-  yPosition = 35;
-  doc.setFontSize(10);
-  doc.text(`Quotation #: ${quotation.quotation_number}`, pageWidth - 80, yPosition);
-  yPosition += 5;
-  doc.text(`Date: ${quotation.date}`, pageWidth - 80, yPosition);
-  yPosition += 5;
-  doc.text(`Valid Until: ${quotation.valid_until}`, pageWidth - 80, yPosition);
-  yPosition += 5;
-  doc.text(`Status: ${quotation.status.toUpperCase()}`, pageWidth - 80, yPosition);
-
-  yPosition += 20;
-
-  // Customer details
-  doc.setFontSize(12);
-  doc.setTextColor(40, 40, 40);
-  doc.text("Bill To:", 20, yPosition);
-  yPosition += 8;
-
-  doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
-  doc.text(quotation.customer?.name || "Unknown Customer", 20, yPosition);
-  yPosition += 5;
-  
-  if (quotation.customer?.company) {
-    doc.text(quotation.customer.company, 20, yPosition);
-    yPosition += 5;
-  }
-  
-  if (quotation.customer?.address) {
-    const customerAddressLines = doc.splitTextToSize(quotation.customer.address, 80);
-    doc.text(customerAddressLines, 20, yPosition);
-    yPosition += customerAddressLines.length * 4;
-  }
-  
-  if (quotation.customer?.email) {
-    doc.text(`Email: ${quotation.customer.email}`, 20, yPosition);
-    yPosition += 5;
-  }
-  
-  if (quotation.customer?.phone) {
-    doc.text(`Phone: ${quotation.customer.phone}`, 20, yPosition);
-    yPosition += 5;
-  }
-  
-  if (quotation.customer?.gst_number) {
-    doc.text(`GST Number: ${quotation.customer.gst_number}`, 20, yPosition);
-    yPosition += 5;
-  }
-
-  yPosition += 15;
-
-  // Items table header
-  doc.setFillColor(240, 240, 240);
-  doc.rect(20, yPosition, pageWidth - 40, 10, 'F');
-  
-  doc.setFontSize(10);
-  doc.setTextColor(40, 40, 40);
-  doc.text("Description", 25, yPosition + 7);
-  doc.text("Qty", pageWidth - 120, yPosition + 7);
-  doc.text("Rate", pageWidth - 90, yPosition + 7);
-  doc.text("Amount", pageWidth - 50, yPosition + 7);
-  
-  yPosition += 15;
-
-  // Items
-  quotation.items.forEach((item, index) => {
-    doc.setFontSize(9);
-    doc.setTextColor(60, 60, 60);
-    
-    // Description with text wrapping
-    const descriptionLines = doc.splitTextToSize(item.description, 80);
-    doc.text(descriptionLines, 25, yPosition);
-    
-    // Quantity, Rate, Amount
-    doc.text(item.quantity.toString(), pageWidth - 120, yPosition);
-    doc.text(`₹${item.rate.toFixed(2)}`, pageWidth - 90, yPosition);
-    doc.text(`₹${item.amount.toFixed(2)}`, pageWidth - 50, yPosition);
-    
-    yPosition += Math.max(descriptionLines.length * 4, 8);
-    
-    // Add line separator
-    if (index < quotation.items.length - 1) {
-      doc.setDrawColor(220, 220, 220);
-      doc.line(20, yPosition, pageWidth - 20, yPosition);
-      yPosition += 5;
-    }
-  });
-
+  doc.text(companySettings.name || "Your Company", pageWidth / 2, yPosition, { align: 'center' });
   yPosition += 10;
 
-  // Totals
-  const subtotal = quotation.subtotal || quotation.amount;
-  const taxAmount = quotation.tax_amount || 0;
-  const total = quotation.amount;
-
+  // Company contact details - centered
   doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
+  const contactLine = `${companySettings.address || ''} | ${companySettings.phone || ''} | ${companySettings.email || ''}`;
+  doc.text(contactLine, pageWidth / 2, yPosition, { align: 'center' });
+  yPosition += 5;
+
+  // Header separator line
+  doc.setDrawColor(60, 60, 60);
+  doc.setLineWidth(2);
+  doc.line(20, yPosition, pageWidth - 20, yPosition);
+  yPosition += 20;
+
+  // Quotation Details section
+  doc.setFontSize(18);
+  doc.setTextColor(40, 40, 40);
+  doc.text("Quotation Details", 20, yPosition);
+  yPosition += 15;
+
+  // Two column layout for quotation and customer details
+  const leftColX = 20;
+  const rightColX = pageWidth / 2 + 10;
   
-  if (taxAmount > 0) {
-    doc.text(`Subtotal: ₹${subtotal.toFixed(2)}`, pageWidth - 80, yPosition);
-    yPosition += 6;
-    if (quotation.tax_type === 'IGST') {
-      doc.text(`IGST (5%): ₹${taxAmount.toFixed(2)}`, pageWidth - 80, yPosition);
-      yPosition += 6;
-    } else {
-      const halfTax = taxAmount / 2;
-      doc.text(`CGST (2.5%): ₹${halfTax.toFixed(2)}`, pageWidth - 80, yPosition);
-      yPosition += 6;
-      doc.text(`SGST (2.5%): ₹${halfTax.toFixed(2)}`, pageWidth - 80, yPosition);
-      yPosition += 6;
-    }
+  // Left column - Quotation info
+  doc.setFontSize(11);
+  doc.setTextColor(60, 60, 60);
+  doc.text(`Quotation Number: ${quotation.quotation_number}`, leftColX, yPosition);
+  yPosition += 7;
+  doc.text(`Date: ${quotation.date}`, leftColX, yPosition);
+  yPosition += 7;
+  doc.text(`Valid Until: ${quotation.valid_until}`, leftColX, yPosition);
+  
+  // Right column - Customer info
+  yPosition -= 14; // Reset to top of section
+  doc.text(`Customer: ${quotation.customer?.name || 'N/A'}`, rightColX, yPosition);
+  yPosition += 7;
+  doc.text(`Email: ${quotation.customer?.email || 'N/A'}`, rightColX, yPosition);
+  yPosition += 7;
+  doc.text(`Phone: ${quotation.customer?.phone || 'N/A'}`, rightColX, yPosition);
+  
+  yPosition += 25;
+
+  // Items section
+  doc.setFontSize(18);
+  doc.setTextColor(40, 40, 40);
+  doc.text("Items", 20, yPosition);
+  yPosition += 15;
+
+  // Table header
+  doc.setFillColor(242, 242, 242);
+  doc.rect(20, yPosition - 5, pageWidth - 40, 12, 'F');
+  
+  doc.setFontSize(11);
+  doc.setTextColor(40, 40, 40);
+  doc.text("Description", 25, yPosition);
+  doc.text("Quantity", pageWidth - 140, yPosition);
+  doc.text("Rate", pageWidth - 90, yPosition);
+  doc.text("Amount", pageWidth - 40, yPosition);
+  
+  yPosition += 10;
+
+  // Table rows
+  doc.setDrawColor(221, 221, 221);
+  quotation.items?.forEach((item, index) => {
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    
+    // Row separator
+    doc.setLineWidth(1);
+    doc.line(20, yPosition, pageWidth - 20, yPosition);
+    yPosition += 8;
+    
+    // Item data
+    const descriptionLines = doc.splitTextToSize(item.description || '', 100);
+    doc.text(descriptionLines, 25, yPosition);
+    doc.text((item.quantity || 0).toString(), pageWidth - 140, yPosition);
+    doc.text(`₹${(item.rate || 0).toLocaleString()}`, pageWidth - 90, yPosition);
+    doc.text(`₹${(item.amount || 0).toLocaleString()}`, pageWidth - 40, yPosition);
+    
+    yPosition += Math.max(descriptionLines.length * 5, 10);
+  });
+
+  if (!quotation.items || quotation.items.length === 0) {
+    doc.setLineWidth(1);
+    doc.line(20, yPosition, pageWidth - 20, yPosition);
+    yPosition += 8;
+    doc.text("No items found", 25, yPosition);
+    yPosition += 10;
+  }
+
+  // Final table border
+  doc.line(20, yPosition, pageWidth - 20, yPosition);
+  yPosition += 20;
+
+  // Totals section - right aligned
+  doc.setFontSize(11);
+  doc.setTextColor(60, 60, 60);
+  
+  const totalsX = pageWidth - 80;
+  doc.text(`Subtotal: ₹${(quotation.subtotal || 0).toLocaleString()}`, totalsX, yPosition);
+  
+  if (quotation.tax_type && quotation.tax_amount) {
+    yPosition += 7;
+    doc.text(`${quotation.tax_type}: ₹${quotation.tax_amount.toLocaleString()}`, totalsX, yPosition);
   }
   
-  doc.setFontSize(12);
+  yPosition += 10;
+  
+  // Grand total with emphasis
+  doc.setFontSize(14);
   doc.setTextColor(40, 40, 40);
-  doc.text(`Total: ₹${total.toFixed(2)}`, pageWidth - 80, yPosition);
+  doc.setLineWidth(2);
+  doc.line(totalsX - 10, yPosition - 3, pageWidth - 20, yPosition - 3);
+  doc.text(`Total Amount: ₹${quotation.amount.toLocaleString()}`, totalsX, yPosition);
 
   yPosition += 20;
 
-  // Notes
+  // Notes section
   if (quotation.notes) {
+    doc.setFontSize(18);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Notes", 20, yPosition);
+    yPosition += 10;
+    
     doc.setFontSize(10);
     doc.setTextColor(80, 80, 80);
-    doc.text("Notes:", 20, yPosition);
-    yPosition += 6;
     const notesLines = doc.splitTextToSize(quotation.notes, pageWidth - 40);
     doc.text(notesLines, 20, yPosition);
-    yPosition += notesLines.length * 4 + 10;
+    yPosition += notesLines.length * 5;
   }
 
-  // Bank Details
+  // Bank details (if available)
   if (companySettings.bankName || companySettings.accountNumber) {
-    yPosition += 10;
-    doc.setFontSize(12);
+    yPosition += 15;
+    doc.setFontSize(18);
     doc.setTextColor(40, 40, 40);
-    doc.text("Bank Details:", 20, yPosition);
-    yPosition += 8;
+    doc.text("Bank Details", 20, yPosition);
+    yPosition += 10;
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setTextColor(80, 80, 80);
     
     if (companySettings.bankName) {
       doc.text(`Bank Name: ${companySettings.bankName}`, 20, yPosition);
       yPosition += 5;
     }
-    
     if (companySettings.accountHolderName) {
       doc.text(`Account Holder: ${companySettings.accountHolderName}`, 20, yPosition);
       yPosition += 5;
     }
-    
     if (companySettings.accountNumber) {
       doc.text(`Account Number: ${companySettings.accountNumber}`, 20, yPosition);
       yPosition += 5;
     }
-    
     if (companySettings.routingNumber) {
       doc.text(`IFSC Code: ${companySettings.routingNumber}`, 20, yPosition);
       yPosition += 5;
-    }
-    
-    if (companySettings.branchAddress) {
-      doc.text(`Branch: ${companySettings.branchAddress}`, 20, yPosition);
-      yPosition += 5;
-    }
-    
-    if (companySettings.swiftCode) {
-      doc.text(`SWIFT Code: ${companySettings.swiftCode}`, 20, yPosition);
     }
   }
 
   // Footer
   const pageHeight = doc.internal.pageSize.height;
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setTextColor(120, 120, 120);
-  doc.text("✉ artisanrv@gmail.com | ☎ +91 80199 93333 | 🌐 www.artisanapparels.com", pageWidth / 2, pageHeight - 25, { align: 'center' });
-  doc.text("Thank you for your business! For any queries, feel free to contact us.", pageWidth / 2, pageHeight - 20, { align: 'center' });
+  doc.text("Thank you for your business!", pageWidth / 2, pageHeight - 20, { align: 'center' });
 
   // Save the PDF
   doc.save(`${quotation.quotation_number}.pdf`);
