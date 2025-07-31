@@ -39,6 +39,7 @@ interface QuotationListProps {
   onDelete: (quotationId: string) => void;
   onDownloadPDF?: (id: string) => void;
   onSendToCustomer?: (id: string) => void;
+  onPrintQuotation?: (id: string) => void;
 }
 
 const QuotationList = ({ 
@@ -50,7 +51,8 @@ const QuotationList = ({
   onUpdateStatus, 
   onDelete,
   onDownloadPDF,
-  onSendToCustomer 
+  onSendToCustomer,
+  onPrintQuotation 
 }: QuotationListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -154,7 +156,7 @@ const QuotationList = ({
                             <Download className="mr-2 h-4 w-4" />
                             Download PDF
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => window.print()}>
+                          <DropdownMenuItem onClick={() => onPrintQuotation?.(quotation.id)}>
                             <Printer className="mr-2 h-4 w-4" />
                             Print
                           </DropdownMenuItem>

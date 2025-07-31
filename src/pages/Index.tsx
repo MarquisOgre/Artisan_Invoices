@@ -295,6 +295,114 @@ const Index = () => {
     }
   };
 
+  const handlePrintQuotation = (quotationId: string) => {
+    const quotation = quotations.find(q => q.id === quotationId || q.quotation_number === quotationId);
+    if (!quotation) return;
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+
+    // Create the print content
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Quotation ${quotation.quotation_number}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+            .company-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+            .section { margin-bottom: 20px; }
+            .section-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ccc; }
+            .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .items-table th { background-color: #f2f2f2; }
+            .total-section { margin-top: 20px; text-align: right; }
+            .total-row { margin: 5px 0; }
+            .grand-total { font-size: 18px; font-weight: bold; border-top: 2px solid #333; padding-top: 10px; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="company-name">${companySettings?.name || 'Your Company'}</div>
+            <div>${companySettings?.address || ''}</div>
+            <div>${companySettings?.phone || ''} | ${companySettings?.email || ''}</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Quotation Details</div>
+            <div class="details-grid">
+              <div>
+                <strong>Quotation Number:</strong> ${quotation.quotation_number}<br>
+                <strong>Date:</strong> ${quotation.date}<br>
+                <strong>Valid Until:</strong> ${quotation.valid_until}
+              </div>
+              <div>
+                <strong>Customer:</strong> ${quotation.customer?.name || 'N/A'}<br>
+                <strong>Email:</strong> ${quotation.customer?.email || 'N/A'}<br>
+                <strong>Phone:</strong> ${quotation.customer?.phone || 'N/A'}
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Items</div>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Quantity</th>
+                  <th>Rate</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${quotation.items?.map((item: any) => `
+                  <tr>
+                    <td>${item.description || ''}</td>
+                    <td>${item.quantity || 0}</td>
+                    <td>₹${(item.rate || 0).toLocaleString()}</td>
+                    <td>₹${(item.amount || 0).toLocaleString()}</td>
+                  </tr>
+                `).join('') || '<tr><td colspan="4">No items found</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="total-section">
+            <div class="total-row"><strong>Subtotal:</strong> ₹${(quotation.subtotal || 0).toLocaleString()}</div>
+            ${quotation.tax_type && quotation.tax_amount ? `
+              <div class="total-row"><strong>${quotation.tax_type}:</strong> ₹${quotation.tax_amount.toLocaleString()}</div>
+            ` : ''}
+            <div class="total-row grand-total"><strong>Total Amount:</strong> ₹${quotation.amount.toLocaleString()}</div>
+          </div>
+
+          ${quotation.notes ? `
+            <div class="section">
+              <div class="section-title">Notes</div>
+              <p>${quotation.notes}</p>
+            </div>
+          ` : ''}
+
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              };
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case "dashboard":
@@ -322,6 +430,7 @@ const Index = () => {
             onDelete={deleteQuotation}
             onDownloadPDF={(id) => handleDownloadPDF(id, "quotation")}
             onSendToCustomer={(id) => handleSendToCustomer(id, "quotation")}
+            onPrintQuotation={handlePrintQuotation}
           />
         );
       case "invoices":
