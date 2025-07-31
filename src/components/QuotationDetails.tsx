@@ -130,6 +130,14 @@ const QuotationDetails = ({ quotation, isOpen, onClose }: QuotationDetailsProps)
             <CardContent className="pt-6">
               <div className="flex justify-end">
                 <div className="w-64 space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>₹{quotation.subtotal?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{quotation.tax_type === 'IGST' ? 'IGST (5%)' : 'CGST (2.5%) + SGST (2.5%)'}:</span>
+                    <span>₹{quotation.tax_amount?.toFixed(2) || '0.00'}</span>
+                  </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total Amount:</span>

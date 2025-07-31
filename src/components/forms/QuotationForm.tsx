@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -25,28 +26,39 @@ interface QuotationItem {
 
 const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'create' }: QuotationFormProps) => {
   const [formData, setFormData] = useState({
-    customer_id: initialData?.customer_id || "",
-    date: initialData?.date || new Date().toISOString().split('T')[0],
-    valid_until: initialData?.valid_until || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    notes: initialData?.notes || "",
-    status: initialData?.status || "save",
-    gst_applicable: initialData?.gst_applicable || "yes",
-    gst_rate: initialData?.gst_rate || "18"
+    customerId: "",
+    date: new Date().toISOString().split('T')[0],
+    validUntil: "",
+    notes: "",
+    taxType: "IGST",
+    status: "save"
   });
 
-  const [items, setItems] = useState<QuotationItem[]>(
-    initialData?.items && initialData.items.length > 0 
-      ? initialData.items 
-      : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
-  );
+  const [items, setItems] = useState<QuotationItem[]>([
+    { description: "", quantity: 1, rate: 0, amount: 0 }
+  ]);
 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (initialData && mode === 'edit') {
+      setFormData({
+        customerId: initialData.customer_id || "",
+        date: initialData.date || new Date().toISOString().split('T')[0],
+        validUntil: initialData.valid_until || "",
+        notes: initialData.notes || "",
+        taxType: initialData.tax_type || "IGST",
+        status: initialData.status || "save"
+      });
+      setItems(initialData.items || []);
+    }
+  }, [initialData, mode]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.customer_id) {
+    if (!formData.customerId) {
       toast({
         title: "Validation Error",
         description: "Please select a customer.",
@@ -59,26 +71,35 @@ const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'cre
     
     if (validItems.length === 0) {
       toast({
-        title: "Validation Error",
+        title: "Validation Error", 
         description: "Please add at least one valid item.",
         variant: "destructive"
       });
       return;
     }
 
-    const subtotal = validItems.reduce((sum, item) => sum + item.amount, 0);
-    const gstAmount = formData.gst_applicable === "yes" ? (subtotal * parseFloat(formData.gst_rate)) / 100 : 0;
-    const totalAmount = subtotal + gstAmount;
+    // Calculate totals
+    const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const taxRate = formData.taxType === 'IGST' ? 0.05 : 0.05; // Both options are 5% total
+    const taxAmount = subtotal * taxRate;
+    const grandTotal = subtotal + taxAmount;
+
+    const quotationData = {
+      customer_id: formData.customerId,
+      date: formData.date,
+      valid_until: formData.validUntil,
+      notes: formData.notes,
+      tax_type: formData.taxType,
+      items: items,
+      amount: grandTotal,
+      subtotal: subtotal,
+      tax_amount: taxAmount,
+      status: formData.status
+    };
 
     setLoading(true);
     try {
-      await onSubmit({
-        ...formData,
-        items: validItems,
-        amount: totalAmount,
-        subtotal,
-        gst_amount: gstAmount
-      });
+      await onSubmit(quotationData);
       onCancel();
     } catch (error) {
       console.error("Error creating quotation:", error);
@@ -87,7 +108,7 @@ const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'cre
     }
   };
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -112,21 +133,26 @@ const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'cre
     }
   };
 
-  const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-  const gstAmount = formData.gst_applicable === "yes" ? (subtotal * parseFloat(formData.gst_rate)) / 100 : 0;
-  const totalAmount = subtotal + gstAmount;
+  // Calculate totals for display
+  const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const taxRate = formData.taxType === 'IGST' ? 0.05 : 0.05;
+  const taxAmount = subtotal * taxRate;
+  const grandTotal = subtotal + taxAmount;
 
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle>{mode === 'edit' ? 'Edit Quotation' : 'Create New Quotation'}</CardTitle>
+        <CardTitle>
+          {mode === 'edit' ? 'Edit Quotation' : 'Create New Quotation'}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="customer">Customer *</Label>
-              <Select value={formData.customer_id} onValueChange={(value) => handleChange("customer_id", value)}>
+              <Select value={formData.customerId} onValueChange={(value) => handleChange("customerId", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a customer" />
                 </SelectTrigger>
@@ -141,35 +167,32 @@ const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'cre
             </div>
 
             <div>
-              <Label htmlFor="gst_applicable">GST Applicable</Label>
-              <Select value={formData.gst_applicable} onValueChange={(value) => handleChange("gst_applicable", value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.gst_applicable === "yes" && (
-              <div>
-                <Label htmlFor="gst_rate">GST Rate</Label>
-                <Select value={formData.gst_rate} onValueChange={(value) => handleChange("gst_rate", value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">0% (No Tax)</SelectItem>
-                    <SelectItem value="5">5% GST</SelectItem>
-                    <SelectItem value="12">12% GST</SelectItem>
-                    <SelectItem value="18">18% GST</SelectItem>
-                    <SelectItem value="28">28% GST</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Label>Tax Type</Label>
+              <div className="mt-2 space-y-2">
+                <Label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="taxType"
+                    value="IGST"
+                    checked={formData.taxType === 'IGST'}
+                    onChange={(e) => handleChange('taxType', e.target.value)}
+                    className="mr-2"
+                  />
+                  IGST 5%
+                </Label>
+                <Label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="taxType"
+                    value="CGST_SGST"
+                    checked={formData.taxType === 'CGST_SGST'}
+                    onChange={(e) => handleChange('taxType', e.target.value)}
+                    className="mr-2"
+                  />
+                  CGST 2.5% & SGST 2.5%
+                </Label>
               </div>
-            )}
+            </div>
 
             <div>
               <Label htmlFor="status">Status</Label>
@@ -196,16 +219,17 @@ const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'cre
             </div>
 
             <div>
-              <Label htmlFor="valid_until">Valid Until</Label>
+              <Label htmlFor="validUntil">Valid Until</Label>
               <Input
-                id="valid_until"
+                id="validUntil"
                 type="date"
-                value={formData.valid_until}
-                onChange={(e) => handleChange("valid_until", e.target.value)}
+                value={formData.validUntil}
+                onChange={(e) => handleChange("validUntil", e.target.value)}
               />
             </div>
           </div>
 
+          {/* Items Section */}
           <div>
             <div className="flex justify-between items-center mb-4">
               <Label className="text-lg font-semibold">Items</Label>
@@ -268,15 +292,27 @@ const QuotationForm = ({ customers, onSubmit, onCancel, initialData, mode = 'cre
               ))}
             </div>
 
-            <div className="text-right mt-4 space-y-2">
-              <p className="text-base">Subtotal: ₹{subtotal.toFixed(2)}</p>
-              {formData.gst_applicable === "yes" && (
-                <p className="text-base">GST ({formData.gst_rate}%): ₹{gstAmount.toFixed(2)}</p>
-              )}
-              <p className="text-lg font-semibold border-t pt-2">Grand Total: ₹{totalAmount.toFixed(2)}</p>
+            {/* Totals */}
+            <div className="flex justify-end mt-6">
+              <div className="w-64 space-y-2">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>{formData.taxType === 'IGST' ? 'IGST (5%)' : 'CGST (2.5%) + SGST (2.5%)'}:</span>
+                  <span>₹{taxAmount.toFixed(2)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-lg font-semibold">
+                  <span>Grand Total:</span>
+                  <span>₹{grandTotal.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Notes */}
           <div>
             <Label htmlFor="notes">Notes</Label>
             <Textarea

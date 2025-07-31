@@ -7,7 +7,8 @@ interface QuotationData {
   status: string;
   amount: number;
   subtotal?: number;
-  gst_amount?: number;
+  tax_amount?: number;
+  tax_type?: string;
   items: Array<{
     description: string;
     quantity: number;
@@ -175,16 +176,17 @@ export const generateQuotationPDF = (quotation: QuotationData, companySettings: 
 
   // Totals
   const subtotal = quotation.subtotal || quotation.amount;
-  const gstAmount = quotation.gst_amount || 0;
+  const taxAmount = quotation.tax_amount || 0;
   const total = quotation.amount;
 
   doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
   
-  if (gstAmount > 0) {
+  if (taxAmount > 0) {
     doc.text(`Subtotal: ₹${subtotal.toFixed(2)}`, pageWidth - 80, yPosition);
     yPosition += 6;
-    doc.text(`GST: ₹${gstAmount.toFixed(2)}`, pageWidth - 80, yPosition);
+    const taxLabel = quotation.tax_type === 'IGST' ? 'IGST (5%)' : 'CGST (2.5%) + SGST (2.5%)';
+    doc.text(`${taxLabel}: ₹${taxAmount.toFixed(2)}`, pageWidth - 80, yPosition);
     yPosition += 6;
   }
   
@@ -250,7 +252,8 @@ export const generateQuotationPDF = (quotation: QuotationData, companySettings: 
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
-  doc.text("Thank you for your business!", pageWidth / 2, pageHeight - 20, { align: 'center' });
+  doc.text("✉ artisanrv@gmail.com | ☎ +91 80199 93333 | 🌐 www.artisanapparels.com", pageWidth / 2, pageHeight - 25, { align: 'center' });
+  doc.text("Thank you for your business! For any queries, feel free to contact us.", pageWidth / 2, pageHeight - 20, { align: 'center' });
 
   // Save the PDF
   doc.save(`${quotation.quotation_number}.pdf`);
