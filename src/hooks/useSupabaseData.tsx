@@ -22,6 +22,9 @@ export interface Quotation {
   quotation_number: string;
   customer_id: string;
   amount: number;
+  subtotal?: number;
+  tax_amount?: number;
+  tax_type?: string;
   status: string;
   date: string;
   valid_until: string;
@@ -36,6 +39,9 @@ export interface Invoice {
   customer_id: string;
   quotation_id?: string;
   amount: number;
+  subtotal?: number;
+  tax_amount?: number;
+  tax_type?: string;
   status: string;
   date: string;
   due_date: string;
@@ -213,6 +219,9 @@ export const useSupabaseData = () => {
       customer_id: quotation.customer_id,
       quotation_id: quotation.id,
       amount: quotation.amount,
+      subtotal: quotation.subtotal,
+      tax_amount: quotation.tax_amount,
+      tax_type: quotation.tax_type,
       status: "save",
       date: new Date().toISOString().split('T')[0],
       due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
@@ -321,6 +330,28 @@ export const useSupabaseData = () => {
     return false;
   };
 
+  const updateInvoice = async (invoiceId: string, invoiceData: Partial<Invoice>) => {
+    const { data, error } = await supabase
+      .from("invoices")
+      .update(invoiceData)
+      .eq("id", invoiceId)
+      .select(`
+        *,
+        customer:customers(*)
+      `)
+      .single();
+
+    if (!error && data) {
+      const processedData = {
+        ...data,
+        items: Array.isArray(data.items) ? data.items : []
+      };
+      setInvoices(prev => prev.map(i => i.id === invoiceId ? processedData : i));
+      return processedData;
+    }
+    return null;
+  };
+
   const updateInvoiceStatus = async (invoiceId: string, status: string) => {
     const updateData: any = { status };
     
@@ -360,6 +391,7 @@ export const useSupabaseData = () => {
     addQuotation,
     updateQuotation,
     addInvoice,
+    updateInvoice,
     convertQuotationToInvoice,
     updateQuotationStatus,
     updateInvoiceStatus,

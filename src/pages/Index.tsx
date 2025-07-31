@@ -33,6 +33,7 @@ const Index = () => {
     addQuotation,
     updateQuotation,
     addInvoice,
+    updateInvoice,
     convertQuotationToInvoice,
     updateQuotationStatus,
     updateInvoiceStatus,
@@ -400,13 +401,15 @@ const Index = () => {
             customers={customers}
             onSubmit={async (data) => {
               if (editingInvoice) {
-                // Handle invoice update logic here
-                toast({
-                  title: "Invoice updated",
-                  description: "Invoice has been updated successfully."
-                });
-                setEditingInvoice(null);
-                setCurrentPage("invoices");
+                const updatedInvoice = await updateInvoice(editingInvoice.id, data);
+                if (updatedInvoice) {
+                  toast({
+                    title: "Invoice updated",
+                    description: "Invoice has been updated successfully."
+                  });
+                  setEditingInvoice(null);
+                  setCurrentPage("invoices");
+                }
               }
             }}
             onCancel={() => setCurrentPage("invoices")}
