@@ -76,8 +76,12 @@ export type Database = {
           invoice_number: string
           items: Json
           notes: string | null
+          paid_date: string | null
           quotation_id: string | null
           status: string
+          subtotal: number | null
+          tax_amount: number | null
+          tax_type: string | null
           updated_at: string
           user_id: string
         }
@@ -91,8 +95,12 @@ export type Database = {
           invoice_number: string
           items?: Json
           notes?: string | null
+          paid_date?: string | null
           quotation_id?: string | null
           status?: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -106,8 +114,12 @@ export type Database = {
           invoice_number?: string
           items?: Json
           notes?: string | null
+          paid_date?: string | null
           quotation_id?: string | null
           status?: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_type?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -139,6 +151,9 @@ export type Database = {
           notes: string | null
           quotation_number: string
           status: string
+          subtotal: number | null
+          tax_amount: number | null
+          tax_type: string | null
           updated_at: string
           user_id: string
           valid_until: string
@@ -153,6 +168,9 @@ export type Database = {
           notes?: string | null
           quotation_number: string
           status?: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_type?: string | null
           updated_at?: string
           user_id: string
           valid_until: string
@@ -167,6 +185,9 @@ export type Database = {
           notes?: string | null
           quotation_number?: string
           status?: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_type?: string | null
           updated_at?: string
           user_id?: string
           valid_until?: string
