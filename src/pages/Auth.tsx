@@ -136,30 +136,31 @@ export default function Auth() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email" className="text-white">Email</Label>
+            <Label htmlFor="email" className="text-sm text-white mb-1 block">Email</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="bg-white/20 border-white/30 text-white placeholder-white/70 focus:border-white focus:ring-white"
+              className="bg-yellow-100 text-black placeholder-gray-700 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
               required
             />
           </div>
-          
-          <div>
-            <Label htmlFor="password" className="text-white">Password</Label>
+
+          <div className="mt-4">
+            <Label htmlFor="password" className="text-sm text-white mb-1 block">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="bg-white/20 border-white/30 text-white placeholder-white/70 focus:border-white focus:ring-white"
+              className="bg-yellow-100 text-black placeholder-gray-700 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
               required
             />
           </div>
+
 
           <Button
             type="submit"
